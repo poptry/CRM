@@ -1,0 +1,8 @@
+:root{
+    --element-blue:#0079b2;
+
+    --navFontColor:rgba(255,255,255,0.97);
+    --navFontColor-m:rgba(255,255,255,0.67);
+    --fontColor:rgba(12,12,12,0.87);
+    --fontColor-m:rgba(12,12,12,0.67);
+}
