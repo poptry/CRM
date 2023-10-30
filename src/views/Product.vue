@@ -16,7 +16,7 @@
         </el-col>
         <el-col :span="12">
           <div class="search">
-            <el-input @keyup.enter.native="subSearch" v-model="searchContent"></el-input>
+            <el-input @keyup.enter.native="subSearch" placeholder="产品名称" v-model="searchContent"></el-input>
             <el-button type="primary" icon="el-icon-search" @click="subSearch">搜索</el-button>
           </div>
         </el-col>
@@ -194,17 +194,29 @@
         selection:[],
         dialogVisible:false,
         handleType:0,//0表示新增产品，1表示编辑产品
-        productList:{
-          'proId': '',
-          'proInfo': '',
-          'proName': '',
-          'proPrice': '',
-          'proState': '',
-          'proTag': '',
-          'proType': '',
-          'proUnit': '',
-          'userId': ''
-        },
+        // productList:{
+        //   'proId': '',
+        //   'proInfo': '',
+        //   'proName': '',
+        //   'proPrice': '',
+        //   'proState': '',
+        //   'proTag': '',
+        //   'proType': '',
+        //   'proUnit': '',
+        //   'userId': ''
+        // },
+        productList:
+          {
+            'proId': '',
+            'proInfo': '这是产品1的信息',
+            'proName': '产品1',
+            'proPrice': 100,
+            'proState': '在售',
+            'proTag': '',
+            'proType': '',
+            'proUnit': 'XYZ传感器',
+            'userId': ''
+          },
         productTypes: [
           { label: '湿度', value: '湿度' },
           { label: '光照', value: '光照' },
@@ -221,6 +233,13 @@
           { label: '磁场', value: '磁场' }
         ],
         rules:{
+          proInfo:[{ required: true, message: '产品信息必填', trigger: 'blur' }],
+          proName:[{ required: true, message: '产品名称必填', trigger: 'blur' }],
+          proPrice:[{ required: true, message: '产品价格必填', trigger: 'blur' }],
+          proState:[{ required: true, message: '产品状态必填', trigger: 'blur' }],
+          proTag:[{ required: true, message: '产品标签必填', trigger: 'blur' }],
+          proType:[{ required: true, message: '产品类型必填', trigger: 'blur' }],
+          proUnit:[{ required: true, message: '产品单位必填', trigger: 'blur' }],
         }
       }
     },
@@ -321,29 +340,33 @@
       },
       //确定弹窗
       submit(){
-        if(this.handleType === 0){
-          addProduct(this.productList).then((response)=>{
-            if(response.status === 200){
-              this.getProducts()
-              this.$message({
+        this.$refs.productList.validate((valid) => {
+          if (valid) {
+            if(this.handleType === 0){
+              addProduct(this.productList).then((response)=>{
+                if(response.status === 200){
+                  this.getProducts()
+                  this.$message({
                     message: '添加成功',
                     type: 'success'
-              });
-            }
-          })
-        }else if(this.handleType === 1){
-          updateProduct(this.productList).then((response)=>{
-            if(response.status === 200){
-              this.getProducts()
-              this.$message({
+                  });
+                }
+              })
+            }else if(this.handleType === 1){
+              updateProduct(this.productList).then((response)=>{
+                if(response.status === 200){
+                  this.getProducts()
+                  this.$message({
                     message: '添加成功',
                     type: 'success'
-              });
+                  });
+                }
+              })
             }
-          })
-        }
-        this.$refs.productList.resetFields()
-        this.dialogVisible = false
+            this.$refs.productList.resetFields()
+            this.dialogVisible = false
+          }
+        })
       },
       //获取线索信息
       getProducts(){

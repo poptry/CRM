@@ -12,7 +12,7 @@
         </el-col>
         <el-col :span="12">
           <div class="search">
-            <el-input @keyup.enter.native="subSearch" v-model="searchContent"></el-input>
+            <el-input @keyup.enter.native="subSearch" placeholder="回款编号或者客户姓名" v-model="searchContent"></el-input>
             <el-button type="primary" icon="el-icon-search" @click="subSearch">搜索</el-button>
           </div>
         </el-col>
@@ -34,20 +34,20 @@
               >
             </el-table-column>
             <el-table-column
-              width="150"
+              width="80"
               fixed="left"
               prop="returnedId"
               label="回款编号">
             </el-table-column>
             <el-table-column
               prop="clientName"
-              width="150"
+              width="80"
               :show-overflow-tooltip="true"
               label="客户名称">
             </el-table-column>
             <el-table-column
               prop="clientId"
-              width="250"
+              width="150"
               :show-overflow-tooltip="true"
               label="客户编号">
             </el-table-column>
@@ -69,6 +69,17 @@
             </el-table-column>
             <el-table-column
               width="150"
+              prop="returnedAuditState"
+              label="回款审核状态">
+            </el-table-column>
+            <el-table-column
+              prop="reviewRemarks"
+              width="150"
+              :show-overflow-tooltip="true"
+              label="审核备注">
+            </el-table-column>
+            <el-table-column
+              width="150"
               prop="returnedType"
               :show-overflow-tooltip="true"
               label="回款类型">
@@ -84,19 +95,16 @@
               label="回款备注">
             </el-table-column>
             <el-table-column
-              width="150"
-              prop="returnedAuditState"
-              label="回款审核状态">
-            </el-table-column>
-            <el-table-column
             fixed="right"
-            width="150"
+            width="200"
             prop=""
             label="操作">
               <template slot-scope="scope">
                 <div style="display: flex; justify-content:space-evenly">
                   <el-button size="mini" @click="handleEidt(scope.row)">编辑</el-button>
                   <el-button type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+                  <el-button v-if="userJob && scope.row.returnedAuditState==='待审核'" type="success" size="mini" @click="handleAduit(scope.row)">审核</el-button>
+                  <el-button v-if="!userJob && (scope.row.returnedAuditState==='拒绝通过'|| scope.row.returnedAuditState==='作废合同')" type="primary" size="mini" @click="reAuidt(scope.row)">重审</el-button>
                 </div>
               </template>
             </el-table-column>
@@ -179,7 +187,9 @@
         </el-form>
         <span slot="footer" class="dialog-footer">
           <el-button type="danger" @click="cancle">取 消</el-button>
-          <el-button type="primary" @click="submit">确 定</el-button>
+          <el-button v-if="handleType===0 || handleType===1 || !userJob" type="primary" @click="submit">确 定</el-button>
+          <el-button v-if="handleType===2 && userJob" type="success" @click="popAuidtRemark = true,aduitState='审核通过'">通过</el-button>
+          <el-button v-if="handleType===2 && userJob" type="danger" @click="popAuidtRemark = true,aduitState='拒绝通过'">拒绝</el-button>
         </span>
       </el-dialog>
       <!-- 选择客户弹窗 -->
@@ -196,6 +206,7 @@
       </el-dialog>
       <!-- 选择合同弹窗 -->
       <el-dialog
+      v-if="popContract"
       title="选择客户"
       :modal="false"
       :visible.sync="popContract"
@@ -206,11 +217,37 @@
       width="80%">
         <Contract @choose="getContractSelection"></Contract>
       </el-dialog>
+      <!-- 审核建议 -->
+      <el-dialog
+      title="审核"
+      :close-on-press-escape="false"
+      :close-on-click-modal="false"
+      :visible.sync="popAuidtRemark"
+      :destroy-on-close="true"
+      :modal="false"
+      :show-close="false"
+      width="30%">
+      <el-form label-position="top" ref="reviewR" :rules="remarkRule" label-width="80px" :model="reviewR">
+        <el-form-item label="审核建议" prop="reviewRemarks">
+          <el-input 
+            resize="none" 
+            type="textarea"  
+            :autosize="{ minRows: 4, maxRows: 4}" 
+            v-model="reviewR.reviewRemarks" 
+            placeholder="审核备注">
+          </el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="popAuidtRemark = false,reviewR.reviewRemarks=''">取 消</el-button>
+        <el-button type="primary" @click="submitAuidt">提交审核</el-button>
+      </span>
+    </el-dialog>
     </div>
   </template>
   
   <script>
-  import {getReturn,updateReturn,deleteProduct,addProduct,searchReturn} from '@/api'
+  import {getReturn,updateReturn,aduitReturn,deleteReturn,addReturn,searchReturn} from '@/api'
   import {timestampToDateTime} from '@/util/common'
   import { mapState } from 'vuex'
   import Client from './Client.vue'
@@ -225,6 +262,17 @@
           pagesize:8,
           currentPage:1,
         },
+        userJob:localStorage.getItem('userJob') === '经理',
+        // 控制备注弹框
+        popAuidtRemark:false,
+        remarkRule:{
+          reviewRemarks:[{ required: true, message: '审核备注必须', trigger: 'blur' }],
+        },
+        //审核备注
+        reviewR:{
+          reviewRemarks:''
+        },
+        aduitState:'',
         //加载中
         loading:true,
         //双击信息
@@ -237,29 +285,40 @@
         selection:[],
         dialogVisible:false,
         handleType:0,//0表示新增产品，1表示编辑产品
+        // returnInfo:{
+        //   clientId:'',
+        //   clientName: '',
+        //   clientNameAndId: '',
+        //   contractId:'',
+        //   contractName: '',
+        //   contractNameAndId:'',
+        //   returnedAmount: '',
+        //   returnedAuditState: '待审核',
+        //   returnedId: '',
+        //   returnedRemark: '',
+        //   returnedTime: '',
+        //   returnedType: '',
+        // },
         returnInfo:{
-          clientId:'',
-          clientName: '',
-          clientNameAndId: '',
-          contractId:'',
-          contractName: '',
-          contractNameAndId:'',
-          returnedAmount: '',
-          returnedAuditState: '',
-          returnedId: '',
-          returnedRemark: '',
-          returnedTime: '',
-          returnedType: '',
+          'clientId': '',
+          'clientName': '',
+          'clientNameAndId': '',
+          'contractId': '',
+          'contractName': '',
+          'contractNameAndId': '',
+          'returnedAmount': '1000',
+          'returnedAuditState': '待审核',
+          'returnedId': '',
+          'returnedRemark': '退货原因说明',
+          'returnedTime': '2023-07-03',
+          'returnedType': '现金'
         },
         rules:{
-          clientName: [
-            { required: true, message: '请输入客户名称', trigger: 'blur' },
+          clientNameAndId: [
+            { required: true, message: '请选择客户', trigger: 'blur' },
           ],
-          contractId: [
-            { required: true, message: '请输入合同ID', trigger: 'blur' },
-          ],
-          contractName: [
-            { required: true, message: '请输入合同名称', trigger: 'blur' },
+          contractNameAndId: [
+            { required: true, message: '请选择合同', trigger: 'blur' },
           ],
           returnedAmount: [
             { required: true, message: '请输入返回金额', trigger: 'blur' },
@@ -287,6 +346,48 @@
       Contract
     },
     methods:{
+      //打开弹框并且赋值事件
+      popAndFill(row){
+        this.dialogVisible = true
+        this.$nextTick(()=>{
+          this.returnInfo = JSON.parse(JSON.stringify(row))
+          this.returnInfo.clientNameAndId = this.returnInfo.clientId
+          this.returnInfo.contractNameAndId = this.returnInfo.contractId
+        })
+      },
+      //审核按钮事件
+      handleAduit(row){
+        console.log(row);
+        this.handleType = 2
+        this.popAndFill(row)
+      },
+      // 提交审核
+      submitAuidt(){
+        this.$refs.reviewR.validate((valid) => {
+          if(valid){
+            this.aduitApi()
+          }
+        })
+      },
+      aduitApi(){
+        aduitReturn({returnedId:this.returnInfo.returnedId,returnedAuditState:this.aduitState,reviewRemarks:this.reviewR.reviewRemarks}).then((res)=>{
+          if(res.status===200){
+            this.$message({
+              message: '提交成功',
+              type: 'success'
+            });
+            this.popAuidtRemark = false
+            this.dialogVisible = false
+            this.getReturns()
+          }
+        }).catch((erro)=>{
+          console.log(erro);
+          this.$message({
+            message: '提交失败',
+            type: 'info'
+          });
+        })
+      },
       //这个是选择客户对话框的关闭回调
       closing(){
         this.popClient = false
@@ -320,6 +421,7 @@
       chooseContract(){
         this.popContract = true
         this.$store.commit('inDailog') //只显示一个新建和确定
+        this.$store.commit('getClient',this.returnInfo.clientId) //存储一下客户的id
       },
       //选择所有
       selectAll(selection){
@@ -330,7 +432,6 @@
         this.selection = selection
       },
       //确认选择
-          //确定选择按钮
       confirmChoose(){
         if(this.selection.length >= 1){
           this.selection.forEach(element=>{
@@ -360,9 +461,9 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          deleteProduct(row.proId).then((response)=>{
+          deleteReturn({data:[row.returnedId]}).then((response)=>{
             if(response.status === 200){
-              this.getProducts()
+              this.getReturns()
               this.$message({
                     message: '删除成功',
                     type: 'success'
@@ -388,6 +489,8 @@
         let {userId,...trueInfo} = row
         this.$nextTick(()=>{
           this.returnInfo = JSON.parse(JSON.stringify(trueInfo))
+          this.returnInfo.clientNameAndId = this.returnInfo.clientId
+          this.returnInfo.contractNameAndId = this.returnInfo.contractId
         })
       },
       //搜索按钮事件
@@ -415,29 +518,34 @@
       },
       //确定弹窗
       submit(){
-        if(this.handleType === 0){
-          addProduct(this.returnInfo).then((response)=>{
-            if(response.status === 200){
-              this.getReturns()
-              this.$message({
+        this.$refs.returnInfo.validate((valid) => {
+          if (valid) {
+            if(this.handleType === 0){
+              addReturn(this.returnInfo).then((response)=>{
+                if(response.status === 200){
+                  this.getReturns()
+                  this.$message({
                     message: '添加成功',
                     type: 'success'
-              });
-            }
-          })
-        }else if(this.handleType === 1){
-          updateReturn(this.returnInfo).then((response)=>{
-            if(response.status === 200){
-              this.getReturns()
-              this.$message({
-                    message: '添加成功',
+                  });
+                }
+              })
+            }else if(this.handleType === 1){
+              updateReturn(this.returnInfo).then((response)=>{
+                if(response.status === 200){
+                  this.getReturns()
+                  this.$message({
+                    message: '编辑成功',
                     type: 'success'
-              });
+                  });
+                }
+              })
             }
-          })
-        }
-        this.$refs.returnInfo.resetFields()
-        this.dialogVisible = false
+            this.$refs.returnInfo.resetFields()
+            this.dialogVisible = false
+          }
+        })
+  
       },
       //获取线索信息
       getReturns(){

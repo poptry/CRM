@@ -131,7 +131,11 @@ export const updateOpportunityState = (data)=>{
 export const getOpportunityPro = (params)=>{
     return http.get('/opportunity/getPro',params)
 }
-
+//getContractByClient
+//通过客户获取商机
+export const getOpportunityByClient = (params)=>{
+    return http.get('/opportunity/getOpportunityByClient',params)
+}
 //**************合同接口***********
 //合同
 //contract
@@ -166,7 +170,10 @@ export const getContractByState = (params)=>{
 export const getContractPro = (params)=>{
     return http.get('/contract/getPro',params)
 }
-
+//通过客户获取合同
+export const getContractByClient = (params)=>{
+    return http.get('/contract/getContractByClient',params)
+}
 
 //**************回款接口***********
 //return
@@ -181,4 +188,20 @@ export const searchReturn = (params)=>{
 //update
 export const updateReturn = (data)=>{
     return http.put('/return/update',data)
+}
+//通过客户获取
+export const getReturnByClient = (params)=>{
+    return http.get('/return/getContractByClient',params)
+}
+//添加回款c
+export const addReturn = (data)=>{
+    return http.post('/return/add',data)
+}
+//审核更改状态updateState
+export const aduitReturn = (data)=>{
+    return http.put('/return/updateState',data)
+}
+//删除
+export const deleteReturn = (data)=>{
+    return http.delete('/return/delete',data)
 }

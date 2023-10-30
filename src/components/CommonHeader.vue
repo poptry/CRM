@@ -7,15 +7,9 @@
         <el-dropdown>
           <el-avatar src="https://tse3-mm.cn.bing.net/th/id/OIP-C.ETwzsvP2G1cpKEfNDjvTswAAAA?w=200&h=180&c=7&r=0&o=5&dpr=2&pid=1.7"></el-avatar>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item>个人中心</el-dropdown-item>
             <el-dropdown-item>退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
-      </el-menu-item>
-      <el-menu-item class="message">
-        <el-badge :value="messages" :max="99" class="item">
-          <i class="el-icon-chat-line-round"></i>
-        </el-badge>
       </el-menu-item>
     </el-menu>
   </div>

@@ -16,7 +16,7 @@
       </el-col>
       <el-col :span="12">
         <div class="search">
-          <el-input @keyup.enter.native="subSearch" v-model="searchContent"></el-input>
+          <el-input @keyup.enter.native="subSearch" placeholder="合同名称" v-model="searchContent"></el-input>
           <el-button type="primary" icon="el-icon-search" @click="subSearch">搜索</el-button>
         </div>
       </el-col>
@@ -37,6 +37,12 @@
             style="width: 100%;">
             <el-table-column
               type="selection">
+            </el-table-column>
+
+            <el-table-column
+              prop="clientId"
+              width="150"
+              label="客户编号">
             </el-table-column>
 
             <el-table-column
@@ -100,14 +106,8 @@
             </el-table-column>
 
             <el-table-column
-              prop="clientId"
-              width="150"
-              label="客户名字">
-            </el-table-column>
-
-            <el-table-column
               prop="contractRemark"
-              width="80"
+              width="200"
               label="备注">
             </el-table-column>
 
@@ -149,7 +149,7 @@
       :destroy-on-close="true"
       :modal="false"
       width="60%"
-      :show-close="true">
+      :show-close="false">
       <el-form :inline="true" :rules="rules" ref="contractInfo" :model="contractInfo" class="demo-form-inline">
         <el-row>
           <el-col :span="12">
@@ -185,15 +185,17 @@
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="商机编号" prop="opportunityId">
-              <el-input :readonly="true" placeholder="选择商机" v-model="contractInfo.opportunityId">
-                <el-button @click="popOpportunity=true,$store.commit('inDailog')" slot="append" icon="iconfont icon-xinzeng"></el-button>
+            <el-form-item label="客户" prop="clientNameAndId">
+              <el-input :readonly="true" placeholder="选择客户" v-model="contractInfo.clientNameAndId">
+                <el-button @click="popClient=true,$store.commit('inDailog')" slot="append" icon="iconfont icon-xinzeng"></el-button>
               </el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="客户名字" prop="clientId">
-              <el-input resize="none" :autosize="{ minRows: 4, maxRows: 4}" v-model="contractInfo.clientId" placeholder="客户名字"></el-input>
+            <el-form-item label="商机编号" prop="opportunityId">
+              <el-input :readonly="true" placeholder="选择商机" v-model="contractInfo.opportunityId">
+                <el-button :disabled="contractInfo.clientNameAndId === ''" @click="selectOpportunity" slot="append" icon="iconfont icon-xinzeng"></el-button>
+              </el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -226,7 +228,7 @@
         </el-row>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button v-if="handleType===0 || handleType===1 || !userJob" type="danger" @click="cancle">取 消</el-button>
+        <el-button  type="danger" @click="cancle">取 消</el-button>
         <el-button v-if="handleType===0 || handleType===1 || !userJob" type="primary" @click="submit">确 定</el-button>
         <el-button v-if="handleType===2 && userJob" type="success" @click="popAuidtRemark = true,aduitState='审核通过'">通过</el-button>
         <el-button v-if="handleType===2 && userJob" type="danger" @click="popAuidtRemark = true,aduitState='拒绝通过'">拒绝</el-button>
@@ -235,6 +237,7 @@
     </el-dialog>
     <!-- 选择商机 -->
     <el-dialog
+      v-if="popOpportunity"
       title="选择商机"
       :modal="false"
       :visible.sync="popOpportunity"
@@ -276,33 +279,34 @@
       :close-on-click-modal="true"
       :visible.sync="popDetail"
       :modal="false"
+      :before-close="beforeClose"
       width="30%">
         <el-tabs v-model="activeName">
           <el-tab-pane label="详细信息" name="first">
             <el-form label-position="left" :model="reviewR" inline class="demo-table-expand">
               <el-form-item label="合同名称">
-                <span>{{ contractInfo.contractName }}</span>
+                <span>{{ contractInfoDetail.contractName }}</span>
               </el-form-item>
               <el-form-item label="合同编号">
-                <span>{{ contractInfo.contractId }}</span>
+                <span>{{ contractInfoDetail.contractId }}</span>
               </el-form-item>
               <el-form-item label="合同类型">
-                <span>{{ contractInfo.contractType }}</span>
+                <span>{{ contractInfoDetail.contractType }}</span>
               </el-form-item>
               <el-form-item label="合同金额">
-                <span>{{ contractInfo.contractAmount }}</span>
+                <span>{{ contractInfoDetail.contractAmount }}</span>
               </el-form-item>
               <el-form-item label="合同状态">
-                <span>{{ contractInfo.contractState }}</span>
+                <span>{{ contractInfoDetail.contractState }}</span>
               </el-form-item>
               <el-form-item label="签约时间">
-                <span>{{ contractInfo.contractStime }}</span>
+                <span>{{ contractInfoDetail.contractStime }}</span>
               </el-form-item>
               <el-form-item label="开始时间">
-                <span>{{ contractInfo.contractStart }}</span>
+                <span>{{ contractInfoDetail.contractStart }}</span>
               </el-form-item>
               <el-form-item label="结束时间">
-                <span>{{ contractInfo.contractEnd }}</span>
+                <span>{{ contractInfoDetail.contractEnd }}</span>
               </el-form-item>
             </el-form>
           </el-tab-pane>
@@ -331,13 +335,27 @@
           </el-tab-pane>
         </el-tabs>
     </el-dialog>
+        <!-- 选择客户弹窗 -->
+      <el-dialog
+        v-if="popClient"
+        title="选择客户"
+        :modal="false"
+        :visible.sync="popClient"
+        :close-on-press-escape="false"
+        :close-on-click-modal="false"
+        :destroy-on-close="true"
+        :before-close="closing"
+        width="80%">
+          <Client @choose="getSelection"></Client>
+      </el-dialog>
   </div>
 </template>
 
 <script>
-import {getContractInfo,getContractPro,aduitContract,deleteContract,searchContract,addContractInfo,updateContract,getContractByState} from '@/api'
+import {getContractInfo,getContractByClient,getContractPro,aduitContract,deleteContract,searchContract,addContractInfo,updateContract,getContractByState} from '@/api'
 import { mapState } from 'vuex';
 import Opportunity from '@/views/Opportunity';
+import Client from './Client.vue'
 import {timestampToDateTime} from '@/util/common'
 export default {
   data() {
@@ -371,6 +389,8 @@ export default {
       popAuidtRemark:false,
       // 控制商机弹框
       popOpportunity:false,
+      //控制客户弹窗
+      popClient:false,
       //身份
       userJob:localStorage.getItem('userJob') === '经理',
       tableSea:[],
@@ -390,35 +410,61 @@ export default {
       searchContent:'',
       dialogVisible:false,
       handleType:0,//0表示新增客户，1表示编辑，2表示审核
-      contractInfo:{
-        opportunityId:'',
-        contractId:'',
-        contractName:'',
-        contractType:'',
-        contractAmount:'',
-        contractState:'',
-        contractStime:'',
-        contractStart:'',
-        contractEnd:'',
-        clientId:'',
-        contractRemark:'',
+      // contractInfo:{
+      //   opportunityId:'',
+      //   contractId:'',
+      //   contractName:'',
+      //   contractType:'',
+      //   contractAmount:'',
+      //   contractState:'',
+      //   contractStime:'',
+      //   contractStart:'',
+      //   contractEnd:'',
+      //   clientId:'',
+      //   contractRemark:'',
+      //   clientNameAndId:''
+      // },
+      contractInfo: {
+        "opportunityId": "",
+        "contractId": "",
+        "contractName": "销售合同",
+        "contractType": "一般销售",
+        "contractAmount": "100000",
+        "contractState": "执行中",
+        "contractStime": "2023-11-01",
+        "contractStart": "2023-11-10",
+        "contractEnd": "2024-11-10",
+        "clientId": "",
+        "contractRemark": "特殊条款：提供售后服务",
+        "clientNameAndId": ''
       },
+      contractInfoDetail:[],
       rules:{
-        clientId:[{ required: true, message: '请输入合同的名称', trigger: 'blur' }],
+        clientNameAndId:[{ required: true, message: '必填', trigger: 'blur' }],
         contractName:[{ required: true, message: '请输入客户手机', trigger: 'blur' }],
         contractType:[{ required: true, message: '请输入合同类型', trigger: 'blur' }],
         contractStime:[{ required: true, message: '请输入签约时间', trigger: 'blur' }],
         contractStart:[{ required: true, message: '请选择合同开始时间', trigger: 'change' }],
         contractEnd:[{ validator:checkTime, trigger: 'change' }],
         contractStart:[{ required: true, message: '请选择合同开始时间', trigger: 'change' }],
+        // opportunityId:[{ required: true, message: '请选择商机', trigger: 'change' }],
+        contractAmount:[{ required: true, message: '请输入合同金额', trigger: 'change' }],
       },
       remarkRule:{
         reviewRemarks:[{ required: true, message: '审核备注必须', trigger: 'blur' }],
       }
     }
   },
-  components:{Opportunity},
+  components:{Opportunity,Client},
   methods:{
+    //关闭客户弹窗
+    closing(){
+      this.popClient = false
+      this.$store.commit('isNotInDailog') //取消后，把按钮状态返回
+    },
+    beforeClose(){
+      this.popDetail = false
+    },
     //重新审核
     reAuidt(row){
       row.contractState = '待审核'
@@ -457,15 +503,27 @@ export default {
           this.getContractData()
         }
     },
+    selectOpportunity(){
+      this.popOpportunity=true
+      this.$store.commit('inDailog')
+      this.$store.commit('getClient',this.contractInfo.clientId)
+    },
     //获取selection
     getSelection(selection){
-      console.log(selection);
-      //回填商机id
-      this.contractInfo.opportunityId = `${selection[0].opportunityId}`
-      this.contractInfo.contractAmount = selection[0].opportunityAmount
-      this.contractInfo.clientId = selection[0].clientId
-      //关闭
-      this.popOpportunity=false
+      if(selection && this.popClient === true){
+        console.log(selection);
+        this.contractInfo.clientNameAndId = `${selection[0].clientName}/${selection[0].clientId}`
+        this.contractInfo.clientId = selection[0].clientId
+        this.popClient = false
+      }else if(selection && this.popOpportunity === true){
+        console.log(selection);
+        //回填商机id
+        this.contractInfo.opportunityId = `${selection[0].opportunityId}`
+        this.contractInfo.contractAmount = selection[0].opportunityAmount
+        //关闭
+        this.popOpportunity=false
+      }
+
     },
     // 提交审核
     submitAuidt(){
@@ -503,7 +561,6 @@ export default {
             message: '请选择一个且最多一个客户',
             type: 'info'
         });
-        this.$store.commit('isNotInDailog')
       }
     },
     //点击换页
@@ -516,11 +573,11 @@ export default {
     dblclinck(row){
       this.popDetail = true
       this.$nextTick(()=>{
-        this.contractInfo = JSON.parse(JSON.stringify(row))
-            //获取合同产品信息
-        getContractPro({params:{contractId:row.contractId}}).then(res=>{
-          this.contractPro = res.data
-        })
+          this.contractInfoDetail = JSON.parse(JSON.stringify(row))
+          //获取合同产品信息
+          getContractPro({params:{contractId:row.contractId}}).then(res=>{
+            this.contractPro = res.data
+          })
       })
     },
     //选择所有
@@ -536,6 +593,7 @@ export default {
       this.dialogVisible = true
       this.$nextTick(()=>{
         this.contractInfo = JSON.parse(JSON.stringify(row))
+        this.contractInfo.clientNameAndId = this.contractInfo.clientId
       })
     },
     //审核按钮事件
@@ -655,26 +713,40 @@ export default {
     //获取合同信息接口事件
     getContractData(){
       this.loading = true
-      //获取客户数据接口调用
-      getContractInfo().then((data)=>{
-        //获取到的客户数据，赋值
-        if(data.status === 200){
-          this.tableData = data.data
-          this.tableData.forEach(e=>{
-            e.contractStart = timestampToDateTime(e.contractStart)
-            e.contractStime = timestampToDateTime(e.contractStime)
-            e.contractEnd = timestampToDateTime(e.contractEnd)
+      if(this.isInDailog){
+        getContractByClient({params:{clientId:this.client}}).then(data=>{
+          if(data.status === 200){
+            this.tableData = data.data
+            this.tableData.forEach(e=>{
+              e.contractStart = timestampToDateTime(e.contractStart)
+              e.contractStime = timestampToDateTime(e.contractStime)
+              e.contractEnd = timestampToDateTime(e.contractEnd)
+            })
+            this.loading = false
+          }
+        })
+      }else{
+        //获取合同数据接口调用
+        getContractInfo().then((data)=>{
+          //获取到的合同数据，赋值
+          if(data.status === 200){
+            this.tableData = data.data
+            this.tableData.forEach(e=>{
+              e.contractStart = timestampToDateTime(e.contractStart)
+              e.contractStime = timestampToDateTime(e.contractStime)
+              e.contractEnd = timestampToDateTime(e.contractEnd)
+            })
+            this.loading = false
+          }
+        },(err)=>{
+          console.log(err);
+        })
+      }
 
-          })
-          this.loading = false
-        }
-      },(err)=>{
-        console.log(err);
-      })
     },
   },
   computed:{
-    ...mapState(['isInDailog'])
+    ...mapState(['isInDailog','client'])
   },
   created(){
     //开局调用获取客户表格

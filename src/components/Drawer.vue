@@ -239,6 +239,15 @@ import {timestampToDateTime,getNowTime,formatDate} from '@/util/common.js'
 export default {
   props:['clueInfo','opportunityInfo'],
    data(){
+    let checkTime = (rule, value, callback) => {
+        if (!value) {
+          return callback(new Error('下次跟进时间不能为空'));
+        }else if (new Date().getTime() >= new Date(this.followInfo.followNextTime).getTime()) {
+          callback(new Error('下次联系时间必须晚于今天！'))
+        } else {
+          callback()
+        }
+      };
     return{
       activeNames:['1'],
       //是否结束了
@@ -276,7 +285,7 @@ export default {
           { required: true, message: '请输入跟进备注', trigger: 'blur' }
         ],
         followNextTime: [
-          {required: true, message: '请选择下次联系日期', trigger: 'change' }
+          { validator:checkTime, trigger: 'change' },
         ],
         followType: [
           { required: true, message: '请输入跟进方式', trigger: 'blur' }

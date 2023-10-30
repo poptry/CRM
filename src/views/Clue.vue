@@ -20,7 +20,7 @@
       </el-col>
       <el-col :span="12">
         <div class="search">
-          <el-input @keyup.enter.native="subSearch" v-model="searchContent"></el-input>
+          <el-input @keyup.enter.native="subSearch" placeholder="线索名称" v-model="searchContent"></el-input>
           <el-button type="primary" icon="el-icon-search" @click="subSearch">搜索</el-button>
         </div>
       </el-col>
@@ -228,7 +228,9 @@ export default {
         if (!value) {
           return callback(new Error('下次跟进时间不能为空'));
         }else if (new Date(this.clueInfo.clueNext).getTime() <= new Date(this.clueInfo.clueFirst).getTime()) {
-          callback(new Error('下次联系时间晚于第一次联系时间！'))
+          callback(new Error('下次联系时间必须晚于第一次联系时间！'))
+        }else if (new Date(this.clueInfo.clueNext).getTime() <= new Date().getTime()) {
+          callback(new Error('下次联系时间必须晚于今天！'))
         } else {
           callback()
         }
@@ -253,18 +255,31 @@ export default {
       selection:[],
       dialogVisible:false,
       handleType:0,//0表示新增线索，1表示编辑线索
-      clueInfo:{
-        clueId:'',
-        clueName:'',
-        clueSource:'',
-        clueProfession:'',
-        clueAddr:'',
-        clueLevel:'',
-        clueContent:'',
-        clueMethod:'',
-        clueFirst:'',
-        clueNext:'',
-        cluePhone:''
+      // clueInfo:{
+      //   clueId:'',
+      //   clueName:'',
+      //   clueSource:'',
+      //   clueProfession:'',
+      //   clueAddr:'',
+      //   clueLevel:'',
+      //   clueContent:'',
+      //   clueMethod:'',
+      //   clueFirst:'',
+      //   clueNext:'',
+      //   cluePhone:''
+      // },
+      clueInfo: {
+        "clueId": "",
+        "clueName": "李四",
+        "clueSource": "推荐人介绍",
+        "clueProfession": "医生",
+        "clueAddr": "上海市",
+        "clueLevel": "初级",
+        "clueContent": "对产品有兴趣，希望了解更多信息",
+        "clueMethod": "电话联系",
+        "clueFirst": "2023-10-28",
+        "clueNext": "2023-11-02",
+        "cluePhone": "13333333333"
       },
       rules:{
         clueName:[{ required: true, message: '请输入线索姓名', trigger: 'blur' }],

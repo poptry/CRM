@@ -7,13 +7,17 @@ const store =  new Vuex.Store({
                 isInDailog:false,
                 isWhich:'',
                 isInDailogPro:false,
+                client:''
         },
         mutations:{
                 inDailog(state){
                         state.isInDailog=true
+                        console.log('inDailog');
                 },
                 isNotInDailog(state){
                         state.isInDailog=false
+                        console.log('inNotDailog');
+
                 },
                 inDailogPro(state){
                         state.isInDailogPro=true
@@ -23,6 +27,9 @@ const store =  new Vuex.Store({
                 },
                 changeWhich(state,value){
                         state.isWhich=value
+                },
+                getClient(state,id){
+                        state.client = id
                 }
         }
 })

@@ -20,7 +20,7 @@
         </el-col>
         <el-col :span="12">
           <div class="search">
-            <el-input @keyup.enter.native="subSearch" v-model="searchContent"></el-input>
+            <el-input @keyup.enter.native="subSearch" placeholder="商机名称" v-model="searchContent"></el-input>
             <el-button type="primary" icon="el-icon-search" @click="subSearch">搜索</el-button>
           </div>
         </el-col>
@@ -55,6 +55,12 @@
               label="商机名称">
             </el-table-column>
             <el-table-column
+              width="150"
+              prop="clientId"
+              :show-overflow-tooltip="true"
+              label="客户ID">
+            </el-table-column>
+            <el-table-column
               prop="opportunityAmount"
               width="150"
               :show-overflow-tooltip="true"
@@ -75,12 +81,6 @@
               width="150"
               prop="opportunityNextTime"
               label="下次联系时间">
-            </el-table-column>
-            <el-table-column
-              width="150"
-              prop="clientId"
-              :show-overflow-tooltip="true"
-              label="客户ID">
             </el-table-column>
             <el-table-column
             fixed="right"
@@ -285,7 +285,7 @@
   </template>
   
   <script>
-  import {getOpportunity,getOpportunityPro,addOpportunity,deleteOpportunity,updateOpportunity,searchOpportunity} from '@/api'
+  import {getOpportunity,getOpportunityByClient,getOpportunityPro,addOpportunity,deleteOpportunity,updateOpportunity,searchOpportunity} from '@/api'
   import {timestampToDateTime} from '@/util/common'
   import Drawer from '@/components/Drawer.vue'
   import Client from './Client.vue'
@@ -296,8 +296,8 @@
       let checkTime = (rule, value, callback) => {
         if (!value) {
           return callback(new Error('下次跟进时间不能为空'));
-        }else if (new Date(this.opportunityInfo.opportunityPreFinishTime).getTime() <= new Date(this.opportunityInfo.opportunityNextTime).getTime()) {
-          callback(new Error('下次跟进早于预计成交时间！'))
+        }else if (new Date(this.opportunityInfo.opportunityPreFinishTime).getTime() >= new Date(this.opportunityInfo.opportunityNextTime).getTime()) {
+          callback(new Error('下次跟进必须晚于预计成交时间！'))
         } else {
           callback()
         }
@@ -329,22 +329,33 @@
         selection:[],
         dialogVisible:false,
         handleType:0,//0表示新增线索，1表示编辑线索
+        // opportunityInfo:{
+        //     opportunityAmount: '',
+        //     opportunityName: '',
+        //     opportunityNextTime: '',
+        //     opportunityPreFinishTime: '',
+        //     opportunityState:'验证客户',
+        //     clientId:'',
+        //     clientNameAndId:'',
+        //     discount:100
+        // },
         opportunityInfo:{
-            opportunityAmount: '',
-            opportunityName: '',
-            opportunityNextTime: '',
-            opportunityPreFinishTime: '',
-            opportunityState:'验证客户',
-            clientId:'',
-            clientNameAndId:'',
-            discount:100
+          opportunityAmount: '', // 假设金额为1000
+          opportunityName: '新商机', // 假设商机名称为'新商机'
+          opportunityNextTime: new Date(), // 假设下次机会时间为当前时间
+          opportunityPreFinishTime: new Date(Date.now() - 24*60*60*1000), // 假设上次完成时间为一天前
+          opportunityState:'验证客户',
+          clientId:'', // 假设客户ID为'123456'
+          clientNameAndId:'', // 假设客户名称和ID为'张三 - 123456'
+          discount:100 // 折扣为100
         },
         rules: {
             opportunityName: [{ required: true, message: '请输入商机名称', trigger: 'blur' }],
             opportunityNextTime: [{ validator:checkTime, trigger: 'change' }],
             opportunityPreFinishTime: [{ required: true, message: '请选择预计完成时间', trigger: 'blur' }],
-            clientId:[{ required: true, message: '请选择客户', trigger: 'blur' }],
-            discount:[{ required: true, message: '请输入折扣', trigger: 'blur' }]
+            clientId:[{ required: true, message: '请选择客户', trigger: 'change' }],
+            discount:[{ required: true, message: '请输入折扣', trigger: 'blur' }],
+            opportunityAmount:[{ required: true, message: '请选择产品', trigger: 'change' }]
         }
       }
     },
@@ -573,28 +584,42 @@
                   }
                 })
               }
+              this.$refs.opportunityInfo.resetFields()
+              this.dialogVisible = false
             }
-            this.$refs.opportunityInfo.resetFields()
-            this.dialogVisible = false
           });
       },
       //获取商机信息
       getOpportunityInfo(){
         this.loading = true
-        getOpportunity().then((data)=>{
-          if(data.status === 200){
-            data.data.forEach(element => {
+        if(this.isInDailog === true){
+          getOpportunityByClient({params:{clientId:this.client}}).then(data=>{
+            if(data.status === 200){
+              data.data.forEach(element=>{
                 element.opportunityNextTime = timestampToDateTime(element.opportunityNextTime)
                 element.opportunityPreFinishTime = timestampToDateTime(element.opportunityPreFinishTime)
-            });
-            this.tableData = data.data
-            this.loading = false
-          }
-        })
+              })
+              this.loading = false
+              this.tableData = data.data
+            }
+          })
+        }else if(this.isInDailog === false){
+           getOpportunity().then((data)=>{
+            if(data.status === 200){
+              data.data.forEach(element => {
+                  element.opportunityNextTime = timestampToDateTime(element.opportunityNextTime)
+                  element.opportunityPreFinishTime = timestampToDateTime(element.opportunityPreFinishTime)
+              });
+              this.tableData = data.data
+              this.loading = false
+            }
+          })
+        }
+       
       }
     },
     computed:{
-         ...mapState(['isInDailog','isClue'])
+         ...mapState(['isInDailog','isClue','client'])
     },
     created(){
       //线索表初始化

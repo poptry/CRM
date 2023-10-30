@@ -2,7 +2,7 @@ import axios from "axios";
 const http = axios.create({
     //通用请求地址，请求前缀
     baseURL: '/api',
-    timeout: 3000,//10秒超时
+    timeout: 10000,//10秒超时
 })
 // 添加请求拦截器
 http.interceptors.request.use(function (config) {

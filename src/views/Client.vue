@@ -28,7 +28,7 @@
       </el-col>
       <el-col :span="12">
         <div class="search">
-          <el-input @keyup.enter.native="subSearch" v-model="searchContent"></el-input>
+          <el-input @keyup.enter.native="subSearch" placeholder="客户名称" v-model="searchContent"></el-input>
           <el-button type="primary" icon="el-icon-search" @click="subSearch">搜索</el-button>
         </div>
       </el-col>
@@ -145,7 +145,13 @@
           <el-input v-model="clientInfo.clientPhone" placeholder="客户手机"></el-input>
         </el-form-item>
         <el-form-item label="客户来源" prop="clientSource">
-          <el-input v-model="clientInfo.clientSource" placeholder="客户来源"></el-input>
+          <el-select v-model="clientInfo.clientSource" placeholder="请选择客户来源">
+            <el-option label="搜索引擎" value="搜索引擎"></el-option>
+            <el-option label="广告" value="广告"></el-option>
+            <el-option label="线上询价" value="线上询价"></el-option>
+            <el-option label="预约上门" value="预约上门"></el-option>
+            <el-option label="电话咨询" value="电话咨询"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="客户地址" prop="clientAddr">
           <el-input v-model="clientInfo.clientAddr" placeholder="客户地址"></el-input>
@@ -183,6 +189,7 @@
         :close-on-press-escape="false"
         :close-on-click-modal="false"
         :destroy-on-close="true"
+        :before-close="beforeClose"
         width="80%">
             <HightSeaVue ></HightSeaVue>
       </el-dialog>
@@ -213,14 +220,23 @@ export default {
       searchContent:'',
       dialogVisible:false,
       handleType:0,//0表示新增客户，1表示编辑
-      clientInfo:{
-        clientName:'',
-        clientPhone:'',
-        clientAddr:'',
-        clientSource:'',
-        clientLevel:'',
-        clientRemark:'',
-        clientProfession:'',
+      // clientInfo:{
+      //   clientName:'',
+      //   clientPhone:'',
+      //   clientAddr:'',
+      //   clientSource:'',
+      //   clientLevel:'',
+      //   clientRemark:'',
+      //   clientProfession:'',
+      // },
+      clientInfo: {
+        "clientName": "张三",
+        "clientPhone": "13333333333",
+        "clientAddr": "北京市",
+        "clientSource": "广告",
+        "clientLevel": "重点客户",
+        "clientRemark": "对产品很感兴趣",
+        "clientProfession": "IT"
       },
       rules:{
         clientName:[{ required: true, message: '请输入客户姓名', trigger: 'blur' }],
@@ -233,6 +249,11 @@ export default {
   },
   components:{HightSeaVue},
   methods:{
+    //beforeClose
+    beforeClose(){
+      this.getClientInfo()
+      this.popSea = false
+    },
     //查看公海按钮
     lookSea(){
       this.popSea = true
@@ -262,7 +283,6 @@ export default {
             message: '请选择一个且最多一个客户',
             type: 'info'
         });
-        this.$store.commit('isNotInDailog')
       }
     },
     //点击换页
