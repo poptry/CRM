@@ -35,15 +35,18 @@
             style="width: 100%;">
             <el-table-column
               type="selection"
+              align="center"
               >
             </el-table-column>
             <el-table-column
               width="150"
               prop="proId"
+              align="center"
               label="产品ID">
             </el-table-column>
             <el-table-column
               prop="proName"
+              align="center"
               width="150"
               fixed="left"
               :show-overflow-tooltip="true"
@@ -52,38 +55,45 @@
             <el-table-column
               prop="proInfo"
               width="250"
+              align="center"
               :show-overflow-tooltip="true"
               label="产品信息">
             </el-table-column>
             <el-table-column
               prop="proPrice"
               width="150"
+              align="center"
               :show-overflow-tooltip="true"
               label="产品价格">
             </el-table-column>
             <el-table-column
               width="150"
+              align="center"
               prop="proState"
               label="产品状态">
             </el-table-column>
             <el-table-column
               width="150"
               prop="proTag"
+              align="center"
               label="产品标签">
             </el-table-column>
             <el-table-column
               width="150"
               prop="proType"
+              align="center"
               :show-overflow-tooltip="true"
               label="产品类型">
             </el-table-column>
             <el-table-column
               width="150"
               prop="proUnit"
+              align="center"
               label="产品单位">
             </el-table-column>
             <el-table-column
               width="150"
+              align="center"
               prop="userId"
               label="用户ID">
             </el-table-column>

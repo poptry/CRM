@@ -1,13 +1,16 @@
 <template>
   <div class="login shadow-box">
     <div class="contain">
-      <span class="title">登录</span>
-      <el-form ref="form" label-position="left" :rules="rules"  :model="userInfo" label-width="80px">
+      <div style="width: 100%;display:flex;flex-direction:row;justify-content:space-around;">
+        <img src="@/assets/avatar.jpg" alt="" style="height:40px">
+        <span class="title">业务关系管理系统</span>
+      </div>
+      <el-form class="animate__animated animate__backInDown" ref="form" label-position="left" :rules="rules"  :model="userInfo" label-width="80px">
         <el-form-item label="账号:" prop="userName">
-          <el-input class="account" v-model="userInfo.userName"></el-input>
+          <el-input @keyup.enter.native="submit" class="account" v-model="userInfo.userName"></el-input>
         </el-form-item>
         <el-form-item label="密码:" prop="userPwd">
-          <el-input class="password" type="password" v-model="userInfo.userPwd"></el-input>
+          <el-input @keyup.enter.native="submit" class="password" type="password" v-model="userInfo.userPwd"></el-input>
         </el-form-item>
       </el-form>
       <el-button type="primary"  @click="submit">登录</el-button>
@@ -17,7 +20,6 @@
 
 <script>
 import {userLogin} from '@/api'
-
 export default {
     name:'Login',
     data(){
@@ -29,9 +31,11 @@ export default {
         rules:{
             userName: [
               { required: true, message: '请输入账号', trigger: 'blur' },
+              { required: true, message: '请输入账号', trigger: 'change' },
             ],
             userPwd: [
-              { required: true, message: '请输入密码', trigger: 'blur' }
+              { required: true, message: '请输入密码', trigger: 'blur' },
+              { required: true, message: '请输入密码', trigger: 'change' }
             ]
           }
       }
@@ -78,15 +82,18 @@ export default {
   background-color: aliceblue;
   color: var(--fontColor);
   .contain{
-    max-height: 300px;
+    max-height: 400px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-around;
-    border: 1px solid var(--element-blue);
-    border-radius: 10px;
-    padding: 20px 40px;
+    padding: 30px 40px;
+    border-radius: 50px;
+    background: #e0ecff;
+    box-shadow:  21px 21px 41px #afafaf,
+                -21px -21px 41px #ffffff;
     .title{
+      vertical-align: middle;
       font-size: 24px;
       font-weight: 700;
       color: var(--element-blue);

@@ -211,7 +211,12 @@
               </el-col>
               <el-col :span="8" style="margin-left: 20px;"> 
                 <el-form-item label="跟进方式" prop="followType">
-                  <el-input v-model="followInfo.followType"></el-input>
+                  <el-select v-model="followInfo.followType" placeholder="请选择跟进方式">
+                    <el-option label="手机" value="手机"></el-option>
+                    <el-option label="微信" value="微信"></el-option>
+                    <el-option label="QQ" value="QQ"></el-option>
+                    <el-option label="面谈" value="面谈"></el-option>
+                  </el-select>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -223,7 +228,7 @@
     <el-divider content-position="left">跟进记录</el-divider>
     <!-- 跟进记录 -->
     <div v-for="(item,index) in followRecords" :key="index" class="follow-records">
-      <div class="shadow-box follow-records-item">
+      <div class="follow-records-item">
         <p class="follow-records-content">内容：{{ item.followDetails }}</p>
         <span class="follow-records-remark">备注：{{item.followRemark}}</span>
         <span class="follow-records-next">下次联系时间：{{item.followNextTime}}</span>
@@ -244,7 +249,7 @@ export default {
           return callback(new Error('下次跟进时间不能为空'));
         }else if (new Date().getTime() >= new Date(this.followInfo.followNextTime).getTime()) {
           callback(new Error('下次联系时间必须晚于今天！'))
-        } else {
+        }else {
           callback()
         }
       };
@@ -271,11 +276,17 @@ export default {
       //是否显示跟进输入框
       isFollow:false,
       //跟进信息
+      // followInfo:{
+      //   followDetails:'',
+      //   followRemark:'',
+      //   followNextTime:'',
+      //   followType:''
+      // },
       followInfo:{
-        followDetails:'',
-        followRemark:'',
+        followDetails:'跟刘总详细介绍了我们的产品，询问了刘总的产品需求',
+        followRemark:'刘总下个月出差，时间比较紧，联系时间尽量延迟到下下个月',
         followNextTime:'',
-        followType:''
+        followType:'微信'
       },
       rules: {
         followDetails: [
@@ -483,10 +494,12 @@ export default {
     .follow-records{
       margin-top: 10px;
       .follow-records-item{
-        padding: 10px;
+        padding: 15px;
         overflow: hidden;
-        box-shadow: 0px 0px 6px 6px #f4f4f4,inset 0px 0px 1px 4px rgb(229, 229, 229);
-        border-radius: 5px;
+        border-radius: 32px;
+        background: linear-gradient(145deg, #e6e6e6, #ffffff);
+        box-shadow:  9px 9px 18px #c9c9c9,
+                    -9px -9px 18px #ffffff;
         .follow-records-content{
           font-size: 16px;
           color: rgba(0, 0, 0, 0.87);
@@ -504,6 +517,7 @@ export default {
           display: block;
           font-size: 12px;
           color: rgba(0, 0, 0, 0.67);
+
         }
       }
     }

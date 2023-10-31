@@ -142,15 +142,15 @@
     <!-- </el-skeleton> -->
     <!-- 编辑新建弹框 -->
     <el-dialog
-      title="合同审核"
+      title="合同"
       :visible.sync="dialogVisible"
       :close-on-press-escape="false"
       :close-on-click-modal="false"
       :destroy-on-close="true"
       :modal="false"
-      width="60%"
+      width="80%"
       :show-close="false">
-      <el-form :inline="true" :rules="rules" ref="contractInfo" :model="contractInfo" class="demo-form-inline">
+      <el-form label-width="80px" label-position="top" :inline="true" :rules="rules" ref="contractInfo" :model="contractInfo" class="demo-form-inline">
         <el-row>
           <el-col :span="12">
             <el-form-item label="合同名称" prop="contractName">
@@ -221,10 +221,92 @@
         </el-row>
         <el-row>
           <el-col :span="12">
+            <el-form-item label="产品及其折扣(%)" prop="contractDiscount">
+              <el-input @input="inputing" placeholder="不需要百分号" v-model="contractInfo.contractDiscount">
+                <el-button slot="append" icon="iconfont icon-xinzeng" @click="chooseProduct"></el-button>
+              </el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
             <el-form-item label="备注" prop="contractRemark">
               <el-input resize="none" type="textarea"  :autosize="{ minRows: 4, maxRows: 4}" v-model="contractInfo.contractRemark" placeholder="备注"></el-input>
             </el-form-item>
           </el-col>
+        </el-row>
+        <el-row>
+          <el-table
+            :data="contractPros"
+            style="width: 100%">
+            <el-table-column
+              width="150"
+              prop="proId"
+              label="产品ID">
+            </el-table-column>
+            <el-table-column
+              prop="proName"
+              width="150"
+              fixed="left"
+              :show-overflow-tooltip="true"
+              label="产品名称">
+            </el-table-column>
+            <el-table-column
+              prop="proInfo"
+              width="250"
+              :show-overflow-tooltip="true"
+              label="产品信息">
+            </el-table-column>
+            <el-table-column
+              prop="proPrice"
+              width="150"
+              :show-overflow-tooltip="true"
+              label="产品价格">
+            </el-table-column>
+            <el-table-column
+              width="150"
+              prop="proState"
+              label="产品状态">
+            </el-table-column>
+            <el-table-column
+              width="150"
+              prop="proTag"
+              label="产品标签">
+            </el-table-column>
+            <el-table-column
+              width="150"
+              prop="proType"
+              :show-overflow-tooltip="true"
+              label="产品类型">
+            </el-table-column>
+            <el-table-column
+              width="150"
+              prop="proUnit"
+              label="产品单位">
+            </el-table-column>
+            <el-table-column
+              width="150"
+              prop="userId"
+              label="用户ID">
+            </el-table-column>
+            <el-table-column
+              fixed="right"
+              width="150"
+              label="操作">
+              <template slot-scope="scope">
+                <div style="display: flex; justify-content:space-evenly">
+                  <el-button type="danger" size="mini" @click="handleDelete(scope.row)">取消</el-button>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              fixed="right"
+              width="150"
+              prop="proNum"
+              label="数量">
+              <template slot-scope="scope">
+                  <input  @input="inputing" type="number" v-model="scope.row.proNum" style="width: 80px;outline: none;">
+              </template>
+            </el-table-column>
+          </el-table>
         </el-row>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -264,7 +346,7 @@
             resize="none" 
             type="textarea"  
             :autosize="{ minRows: 4, maxRows: 4}" 
-            v-model="reviewR.reviewRemarks" 
+            v-model="reviewR.reviewRemarks"
             placeholder="审核备注">
           </el-input>
         </el-form-item>
@@ -274,6 +356,7 @@
         <el-button type="primary" @click="submitAuidt">提交审核</el-button>
       </span>
     </el-dialog>
+    <!-- 详细信息的弹窗 -->
     <el-dialog
       title="详细"
       :close-on-click-modal="true"
@@ -335,7 +418,7 @@
           </el-tab-pane>
         </el-tabs>
     </el-dialog>
-        <!-- 选择客户弹窗 -->
+      <!-- 选择客户弹窗 -->
       <el-dialog
         v-if="popClient"
         title="选择客户"
@@ -348,6 +431,19 @@
         width="80%">
           <Client @choose="getSelection"></Client>
       </el-dialog>
+      <!-- 选择产品 -->
+      <el-dialog
+      v-if="popProduct"
+      title="选择产品"
+      :modal="false"
+      :visible.sync="popProduct"
+      :close-on-press-escape="false"
+      :close-on-click-modal="false"
+      :destroy-on-close="true"
+      :before-close="closingPro"
+      width="80%">
+        <Product @choose="getProductSelection"></Product>
+      </el-dialog>
   </div>
 </template>
 
@@ -356,6 +452,7 @@ import {getContractInfo,getContractByClient,getContractPro,aduitContract,deleteC
 import { mapState } from 'vuex';
 import Opportunity from '@/views/Opportunity';
 import Client from './Client.vue'
+import Product from './Product.vue'
 import {timestampToDateTime} from '@/util/common'
 export default {
   data() {
@@ -369,6 +466,8 @@ export default {
         }
       };
     return {
+      //popProduct
+      popProduct:false,
       //控制展开页
       activeNamesPro:['0'],
       //详细页
@@ -383,7 +482,7 @@ export default {
       top:'30vh',
       //审核备注
       reviewR:{
-        reviewRemarks:''
+        reviewRemarks:'合同信息无误，内容符合要求'
       },
       // 控制备注弹框
       popAuidtRemark:false,
@@ -410,6 +509,7 @@ export default {
       searchContent:'',
       dialogVisible:false,
       handleType:0,//0表示新增客户，1表示编辑，2表示审核
+      contractPros:[],//新增商机选择的产品
       // contractInfo:{
       //   opportunityId:'',
       //   contractId:'',
@@ -436,27 +536,34 @@ export default {
         "contractEnd": "2024-11-10",
         "clientId": "",
         "contractRemark": "特殊条款：提供售后服务",
-        "clientNameAndId": ''
+        "clientNameAndId": '',
+        "contractDiscount":100
       },
       contractInfoDetail:[],
       rules:{
-        clientNameAndId:[{ required: true, message: '必填', trigger: 'blur' }],
+        clientNameAndId:[{ required: true, message: '必填', trigger: 'change' }],
         contractName:[{ required: true, message: '请输入客户手机', trigger: 'blur' }],
         contractType:[{ required: true, message: '请输入合同类型', trigger: 'blur' }],
         contractStime:[{ required: true, message: '请输入签约时间', trigger: 'blur' }],
         contractStart:[{ required: true, message: '请选择合同开始时间', trigger: 'change' }],
         contractEnd:[{ validator:checkTime, trigger: 'change' }],
         contractStart:[{ required: true, message: '请选择合同开始时间', trigger: 'change' }],
-        // opportunityId:[{ required: true, message: '请选择商机', trigger: 'change' }],
-        contractAmount:[{ required: true, message: '请输入合同金额', trigger: 'change' }],
+        contractAmount:[{ required: true, message: '请输入合同金额，或者选择对应的商机', trigger: 'change' }],
+        contractDiscount:[{ required: true, message:'请输入折扣', trigger: 'change' }],
       },
       remarkRule:{
         reviewRemarks:[{ required: true, message: '审核备注必须', trigger: 'blur' }],
       }
     }
   },
-  components:{Opportunity,Client},
+  components:{Opportunity,Client,Product},
   methods:{
+    //关闭产品回调
+    closingPro(){
+      this.popProduct = false
+      this.$store.commit('isNotInDailogPro') //取消后，把按钮状态返回
+      // https://blog.csdn.net/yb305/article/details/116190251 解决弹窗缓存问题
+    },
     //关闭客户弹窗
     closing(){
       this.popClient = false
@@ -468,62 +575,94 @@ export default {
     //重新审核
     reAuidt(row){
       row.contractState = '待审核'
-    //更新用户接口调用
-    updateContract(row).then((data)=>{
-        if(data.status === 200){
-          //重新请求表单
-          this.getContractData()
-          this.$message({
-            message: '提交成功',
-            type: 'success'
-          });
-        }
-      })
-    },
-    //筛选
-      handleFilterChange(filters) {
-        console.log(filters)
-        const _this = this;
-        console.log(filters.aStatus)
-        console.log(_this);
-        if (filters.aStatus.length > 0) {
-          _this.status = filters.aStatus[0];
-        } else {
-          _this.status = undefined;
-        }
-        if(_this.status!==undefined){
-          getContractByState({params:{contractState:_this.status}}).then(res=>{
-          if(res.status === 200){
-            console.log(res);
-            this.tableData = res.data
-            this.paging.currentPage = 1
+      //更新用户接口调用
+      aduitContract({contractId:row.contractId,contractState:row.contractState,reviewRemarks:row.reviewRemarks}).then((data)=>{
+          if(data.status === 200){
+            //重新请求表单
+            this.getContractData()
+            this.$message({
+              message: '提交成功',
+              type: 'success'
+            });
           }
-          })
-        }else{
-          this.getContractData()
+        })
+      },
+    //筛选
+    handleFilterChange(filters) {
+      console.log(filters)
+      const _this = this;
+      console.log(filters.aStatus)
+      console.log(_this);
+      if (filters.aStatus.length > 0) {
+        _this.status = filters.aStatus[0];
+      } else {
+        _this.status = undefined;
+      }
+      if(_this.status!==undefined){
+        getContractByState({params:{contractState:_this.status}}).then(res=>{
+        if(res.status === 200){
+          console.log(res);
+          this.tableData = res.data
+          this.paging.currentPage = 1
         }
+        })
+      }else{
+        this.getContractData()
+      }
     },
+    //选择产品
+    chooseProduct(){
+      this.popProduct = true
+      this.$store.commit('inDailogPro') //只显示一个新建和确定
+    },
+    //输入数量时的回调
+    inputing(){
+      this.calculate(this.contractPros)
+    },
+    //计算商机金额
+    calculate(pro){
+      let sum = 0
+      pro.forEach(element=>{
+        sum += Number(element.proNum) * Number(element.proPrice)
+      })
+      sum = sum * Number(this.contractInfo.contractDiscount) / 100
+      this.contractInfo.contractAmount = sum.toFixed(2)
+    },
+    // 获取产品selection
+    getProductSelection(selection){
+      this.contractPros = selection
+      this.calculate(this.contractPros)
+      this.popProduct=false
+    }, 
+    //选择商机
     selectOpportunity(){
       this.popOpportunity=true
       this.$store.commit('inDailog')
       this.$store.commit('getClient',this.contractInfo.clientId)
     },
     //获取selection
-    getSelection(selection){
+    getSelection(selection,extraParams){
       if(selection && this.popClient === true){
-        console.log(selection);
         this.contractInfo.clientNameAndId = `${selection[0].clientName}/${selection[0].clientId}`
         this.contractInfo.clientId = selection[0].clientId
+        if(this.contractInfo.clientId!==''){
+          this.contractInfo.opportunityId = null
+          this.contractInfo.contractAmount = null
+          this.contractInfo.contractDiscount = 100
+          this.contractPros = []
+        }
         this.popClient = false
       }else if(selection && this.popOpportunity === true){
-        console.log(selection);
+        //记录选择的商机的所有产品信息，再回填到新建合同里边
+        this.contractPros = extraParams
         //回填商机id
         this.contractInfo.opportunityId = `${selection[0].opportunityId}`
         this.contractInfo.contractAmount = selection[0].opportunityAmount
+        //回填商机的折扣
+        this.contractInfo.contractDiscount = selection[0].opportunityDiscount
         //关闭
         this.popOpportunity=false
       }
-
     },
     // 提交审核
     submitAuidt(){
@@ -565,9 +704,7 @@ export default {
     },
     //点击换页
     handleCurrentChange(currentPage){
-      console.log(currentPage);
       this.paging.currentPage = currentPage
-      console.log(this.paging.currentPage);
     },
     //表格条目双击事件
     dblclinck(row){
@@ -591,9 +728,13 @@ export default {
     //打开弹框并且赋值事件
     popAndFill(row){
       this.dialogVisible = true
-      this.$nextTick(()=>{
+       this.$nextTick(()=>{
         this.contractInfo = JSON.parse(JSON.stringify(row))
         this.contractInfo.clientNameAndId = this.contractInfo.clientId
+        //获取合同产品信息
+        getContractPro({params:{contractId:row.contractId}}).then(res=>{
+          this.contractPros = res.data
+        })
       })
     },
     //审核按钮事件
@@ -641,6 +782,7 @@ export default {
       this.dialogVisible = false
       //置空表单
       this.$refs.contractInfo.resetFields()
+      this.contractPros = []
     },
 
     //确定弹窗
@@ -651,7 +793,7 @@ export default {
             if(this.handleType === 0){
               this.contractInfo.contractState = '待审核'
               //添加用户接口调用
-              addContractInfo(this.contractInfo).then((data)=>{
+              addContractInfo({crmContract:this.contractInfo,crmProContracts:this.contractPros}).then((data)=>{
                 //判断是否添加成功
                 if(data.status === 200){
                   //重新请求表格
@@ -660,6 +802,7 @@ export default {
                     message: '添加成功',
                     type: 'success'
                   });
+                  this.contractPros = []
                 }
               },(erro)=>{
                 this.$message.error(erro);
@@ -677,6 +820,7 @@ export default {
                 }
               })
             }
+            this.contractPros = []
             this.dialogVisible = false
             this.$refs.contractInfo.resetFields()
           }

@@ -31,9 +31,11 @@
             style="width: 100%;">
             <el-table-column
               type="selection"
+              align="center"
               >
             </el-table-column>
             <el-table-column
+              align="center"
               width="80"
               fixed="left"
               prop="returnedId"
@@ -41,56 +43,66 @@
             </el-table-column>
             <el-table-column
               prop="clientName"
+              align="center"
               width="80"
               :show-overflow-tooltip="true"
               label="客户名称">
             </el-table-column>
             <el-table-column
               prop="clientId"
+              align="center"
               width="150"
               :show-overflow-tooltip="true"
               label="客户编号">
             </el-table-column>
             <el-table-column
               prop="contractName"
+              align="center"
               width="150"
               :show-overflow-tooltip="true"
               label="合同名称">
             </el-table-column>
             <el-table-column
               width="150"
+              align="center"
               prop="contractId"
               label="合同编号">
             </el-table-column>
             <el-table-column
               width="150"
+              align="center"
               prop="returnedAmount"
               label="回款金额">
             </el-table-column>
             <el-table-column
               width="150"
+              align="center"
               prop="returnedAuditState"
               label="回款审核状态">
             </el-table-column>
             <el-table-column
               prop="reviewRemarks"
+              align="center"
               width="150"
               :show-overflow-tooltip="true"
               label="审核备注">
             </el-table-column>
             <el-table-column
               width="150"
+              align="center"
               prop="returnedType"
               :show-overflow-tooltip="true"
               label="回款类型">
             </el-table-column>
             <el-table-column
               width="150"
+              align="center"
               prop="returnedTime"
               label="回款时间">
             </el-table-column>
             <el-table-column
               width="150"
+              align="center"
               prop="returnedRemark"
               label="回款备注">
             </el-table-column>
@@ -309,7 +321,7 @@
           'returnedAmount': '1000',
           'returnedAuditState': '待审核',
           'returnedId': '',
-          'returnedRemark': '退货原因说明',
+          'returnedRemark': '回款金额1000，还有9个1000',
           'returnedTime': '2023-07-03',
           'returnedType': '现金'
         },

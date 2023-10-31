@@ -1,13 +1,13 @@
 <template>
   <div class="crm-header">
     <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal">
-      <el-menu-item @click="clickIcon"><i style="color: var(--element-blue); font-size: 2em;" class="iconfont icon-lu">crm</i></el-menu-item>
+      <el-menu-item @click="clickIcon"><i style="color: var(--element-blue); font-size: 1.5em;" class="iconfont icon-lu">业务关系管理系统</i></el-menu-item>
       <el-menu-item @click="clickMenu(item)" v-for="(item,index) in navList" :key="index" :index="item.id">{{ item.name }}</el-menu-item>
       <el-menu-item style="float: right;">
-        <el-dropdown>
+        <el-dropdown @command="handleCommand">
           <el-avatar src="https://tse3-mm.cn.bing.net/th/id/OIP-C.ETwzsvP2G1cpKEfNDjvTswAAAA?w=200&h=180&c=7&r=0&o=5&dpr=2&pid=1.7"></el-avatar>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item>退出登录</el-dropdown-item>
+            <el-dropdown-item command="exit">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </el-menu-item>
@@ -55,6 +55,13 @@ export default {
     }
   },
   methods:{
+    handleCommand(command) {
+      if(command === 'exit'){
+        localStorage.removeItem('userJob')
+        localStorage.removeItem('token')
+        this.$router.push('/login')
+      }
+    },
     clickIcon(){
       this.$router.push('/client').catch((error)=>{
         error

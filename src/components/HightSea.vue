@@ -11,7 +11,7 @@
         @select-all="selectAll"
         stripe
         :border="true"
-        :data="tableData.slice((paging.currentPage-1)*paging.pagesize,paging.currentPage*paging.pagesize)"
+        :data=tableData
         height="400"
         style="width: 100%;">
         <el-table-column
@@ -109,8 +109,8 @@ export default {
             
         },
         //获取公海数据
-        drawHightSeas(){
-                getHighSeas().then(res=>{
+        async drawHightSeas(){
+                await getHighSeas().then(res=>{
                     if(res.status === 200)
                     this.tableData = res.data
                 })

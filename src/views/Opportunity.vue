@@ -40,14 +40,17 @@
             style="width: 100%;">
             <el-table-column
               type="selection"
-              >
+              align="center"
+            >
             </el-table-column>
             <el-table-column
+              align="center"
               width="150"
               prop="opportunityId"
               label="商机ID">
             </el-table-column>
             <el-table-column
+              align="center"
               prop="opportunityName"
               width="150"
               fixed="left"
@@ -56,11 +59,13 @@
             </el-table-column>
             <el-table-column
               width="150"
+              align="center"
               prop="clientId"
               :show-overflow-tooltip="true"
               label="客户ID">
             </el-table-column>
             <el-table-column
+              align="center"
               prop="opportunityAmount"
               width="150"
               :show-overflow-tooltip="true"
@@ -68,11 +73,13 @@
             </el-table-column>
             <el-table-column
               prop="opportunityState"
+              align="center"
               width="150"
               :show-overflow-tooltip="true"
               label="商机状态">
             </el-table-column>
             <el-table-column
+              align="center"
               width="150"
               prop="opportunityPreFinishTime"
               label="商机预计成交时间">
@@ -83,6 +90,13 @@
               label="下次联系时间">
             </el-table-column>
             <el-table-column
+              align="center"
+              width="150"
+              prop="opportunityDiscount"
+              label="商机折扣(%)">
+            </el-table-column>
+            <el-table-column
+            align="center"
             fixed="right"
             width="150"
             prop=""
@@ -156,8 +170,8 @@
           </el-row>
           <el-row>
             <el-col :span="12">
-                <el-form-item label="产品及其折扣(%)" prop="discount">
-                    <el-input placeholder="不需要百分号" v-model="opportunityInfo.discount">
+                <el-form-item label="产品及其折扣(%)" prop="opportunityDiscount">
+                    <el-input @input="inputing" placeholder="不需要百分号" v-model="opportunityInfo.opportunityDiscount">
                         <el-button slot="append" icon="iconfont icon-xinzeng" @click="chooseProduct"></el-button>
                     </el-input>
                 </el-form-item>
@@ -228,7 +242,7 @@
                     label="操作">
                     <template slot-scope="scope">
                       <div style="display: flex; justify-content:space-evenly">
-                        <el-button type="danger" size="mini" @click="handleDelete(scope.row)">取消</el-button>
+                        <el-button type="danger" size="mini" @click="deleteOpportunityPro(scope.row)">取消</el-button>
                       </div>
                     </template>
                   </el-table-column>
@@ -241,7 +255,7 @@
                         <input  @input="inputing" type="number" v-model="scope.row.proNum" style="width: 80px;outline: none;">
                     </template>
                   </el-table-column>
-                </el-table>
+            </el-table>
           </el-row>
         </el-form>
         <span slot="footer" class="dialog-footer">
@@ -296,13 +310,17 @@
       let checkTime = (rule, value, callback) => {
         if (!value) {
           return callback(new Error('下次跟进时间不能为空'));
-        }else if (new Date(this.opportunityInfo.opportunityPreFinishTime).getTime() >= new Date(this.opportunityInfo.opportunityNextTime).getTime()) {
-          callback(new Error('下次跟进必须晚于预计成交时间！'))
-        } else {
+        }else if (new Date(this.opportunityInfo.opportunityPreFinishTime).getTime() <= new Date(this.opportunityInfo.opportunityNextTime).getTime()) {
+          callback(new Error('下次跟进必须早于预计成交时间！'))
+        }else if (new Date().getTime() >= new Date(this.opportunityInfo.opportunityNextTime).getTime()) {
+          callback(new Error('下次联系时间必须晚于今天！'))
+        }else {
           callback()
         }
       };
       return {
+        //商机已经有的产品
+        opportunityHavePros:[],
         proNum:[],
         //选择客户弹框
         popClient:false,
@@ -337,7 +355,7 @@
         //     opportunityState:'验证客户',
         //     clientId:'',
         //     clientNameAndId:'',
-        //     discount:100
+        //     opportunityDiscount:100
         // },
         opportunityInfo:{
           opportunityAmount: '', // 假设金额为1000
@@ -347,14 +365,14 @@
           opportunityState:'验证客户',
           clientId:'', // 假设客户ID为'123456'
           clientNameAndId:'', // 假设客户名称和ID为'张三 - 123456'
-          discount:100 // 折扣为100
+          opportunityDiscount:100 // 折扣为100
         },
         rules: {
             opportunityName: [{ required: true, message: '请输入商机名称', trigger: 'blur' }],
             opportunityNextTime: [{ validator:checkTime, trigger: 'change' }],
             opportunityPreFinishTime: [{ required: true, message: '请选择预计完成时间', trigger: 'blur' }],
             clientId:[{ required: true, message: '请选择客户', trigger: 'change' }],
-            discount:[{ required: true, message: '请输入折扣', trigger: 'blur' }],
+            opportunityDiscount:[{ required: true, message: '请输入折扣', trigger: 'blur' }],
             opportunityAmount:[{ required: true, message: '请选择产品', trigger: 'change' }]
         }
       }
@@ -365,6 +383,14 @@
       Product
     },
     methods:{
+      //选择产品的删除
+      deleteOpportunityPro(row){
+        console.log('row',row);
+        this.opportunityPros=this.opportunityPros.filter(item=>{
+          item.proId!==row.proId
+        })
+        console.log(this.opportunityPros);
+      },
       //批量删除
       deleteSomeOpportunities(){
         if(this.selection.length <= 0){
@@ -381,22 +407,33 @@
         }
       },
       //获取产品
-      getOpportunityPros(){
-        getOpportunityPro().then(res=>{
-          console.log(res);
-        })
-      },
+      // getOpportunityPros(id){
+      //   getOpportunityPro({params:{opportunityId:id}}).then(res=>{
+      //     if(res.status===200){
+      //       this.opportunityHavePros = res.data
+      //       console.log(this.opportunityHavePros);
+      //     }
+      //   })
+      // },
       //确认选择
-      confirmChoose(){
+      async confirmChoose(){
         if(this.selection.length === 1){
-          this.$emit('choose',this.selection)
+          console.log('selection',this.selection);
+          //用到async await 请求完成后再进行下一步
+          await getOpportunityPro({params:{opportunityId:this.selection[0].opportunityId}}).then(res=>{
+            if(res.status===200){
+              this.opportunityHavePros = res.data
+            }
+          }).catch(erro=>{
+            console.log(erro);
+          })
+          this.$emit('choose',this.selection,this.opportunityHavePros)
           this.$store.commit('isNotInDailog')
         }else{
           this.$message({
               message: '请选择一个且最多一个客户',
               type: 'info'
           });
-          this.$store.commit('isNotInDailog')
         }
       },
       //输入数量时的回调
@@ -409,7 +446,7 @@
         pro.forEach(element=>{
           sum += Number(element.proNum)*Number(element.proPrice)
         })
-        sum = sum * Number(this.opportunityInfo.discount) / 100
+        sum = sum * Number(this.opportunityInfo.opportunityDiscount) / 100
         console.log(sum.toFixed(2));
         this.opportunityInfo.opportunityAmount = sum.toFixed(2)
       },
@@ -488,10 +525,15 @@
         this.deleteOpportunities([row.opportunityId])
       },
       //编辑事件
-      handleEidt(row){
+      async handleEidt(row){
         this.handleType = 1
         this.dialogVisible = true
         let {userId,...trueInfo} = row
+        await getOpportunityPro({params:{opportunityId:row.opportunityId}}).then(res=>{
+          if(res.status===200){
+            this.opportunityPros = res.data
+          }
+        })
         this.$nextTick(()=>{
           this.opportunityInfo = JSON.parse(JSON.stringify(trueInfo))
         })
@@ -542,6 +584,7 @@
          //置空表单
         this.$refs.opportunityInfo.resetFields()
         this.dialogVisible = false
+        this.opportunityPros = []
       },
       //确定弹窗
       submit(){
@@ -561,6 +604,7 @@
                       message: '添加成功',
                       type: 'success'
                     });
+                    this.opportunityPros = []
                   }else{
                     this.$message({
                       message: '添加失败',
@@ -576,6 +620,7 @@
                       message: '编辑成功',
                       type: 'success'
                     });
+                    this.opportunityPros = []
                   }else{
                     this.$message({
                       message: '编辑失败',

@@ -40,72 +40,85 @@
           style="width: 100%;">
           <el-table-column
             type="selection"
+            align="center"
             >
           </el-table-column>
           <el-table-column
             width="150"
             prop="clueId"
+            align="center"
             label="线索ID">
           </el-table-column>
           <el-table-column
             prop="clueName"
-            width="150"
+            width="120"
             fixed="left"
+            align="center"
             :show-overflow-tooltip="true"
-            label="线索名称">
+            label="线索客户名称">
           </el-table-column>
           <el-table-column
             prop="cluePhone"
             width="150"
+            align="center"
             :show-overflow-tooltip="true"
             label="线索手机">
           </el-table-column>
           <el-table-column
             prop="clueProfession"
             width="150"
+            align="center"
             :show-overflow-tooltip="true"
             label="线索行业">
           </el-table-column>
           <el-table-column
             width="150"
             prop="clueSource"
+            align="center"
             label="线索来源">
           </el-table-column>
           <el-table-column
             width="150"
             prop="clueAddr"
+            align="center"
             label="线索地址">
           </el-table-column>
           <el-table-column
             width="150"
             prop="clueLevel"
+            align="center"
             :show-overflow-tooltip="true"
             label="线索级别">
           </el-table-column>
           <el-table-column
             width="150"
             prop="clueContent"
+            align="center"
             label="线索内容">
           </el-table-column>
           <el-table-column
             width="150"
             prop="clueMethod"
+            align="center"
             label="跟进方式">
           </el-table-column>
           <el-table-column
             prop="clueFirst"
             width="150"
+            align="center"
             :show-overflow-tooltip="true"
             label="第一次跟进时间">
           </el-table-column>
           <el-table-column
             prop="clueNext"
             width="150"
+            align="center"
             label="下次跟进时间">
           </el-table-column>
           <el-table-column
             width="80"
             prop="userId"
+            align="center"
             label="用户ID">
           </el-table-column>
           <el-table-column
@@ -144,64 +157,98 @@
       :visible.sync="dialogVisible"
       :modal="false"
       :show-close="false"
-      width="50%">
+      width="60%">
       <el-form  :inline="true" :rules="rules" ref="clueInfo" :model="clueInfo" class="demo-form-inline">
-        <el-form-item label="线索名称" prop="clueName">
-          <el-input v-model="clueInfo.clueName" placeholder="线索名称"></el-input>
-        </el-form-item>
-        <el-form-item label="线索手机" prop="cluePhone">
-          <el-input v-model="clueInfo.cluePhone" placeholder="线索手机"></el-input>
-        </el-form-item>
-        <el-form-item label="线索地址" prop="clueAddr">
-          <el-input v-model="clueInfo.clueAddr" placeholder="线索地址"></el-input>
-        </el-form-item>
-        <el-form-item label="线索级别" prop="clueLevel">
-          <el-select v-model="clueInfo.clueLevel" placeholder="请选择线索级别">
-            <el-option label="低优先级客户" value="低优先级客户"></el-option>
-            <el-option label="一般客户" value="一般客户"></el-option>
-            <el-option label="重点客户" value="重点客户"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="线索行业" prop="clueProfession">
-          <el-select v-model="clueInfo.clueProfession" placeholder="请选择线索行业">
-            <el-option label="IT" value="IT"></el-option>
-            <el-option label="金融业" value="金融业"></el-option>
-            <el-option label="运输/物流" value="运输/物流"></el-option>
-            <el-option label="文化传媒" value="文化传媒"></el-option>
-            <el-option label="生产" value="生产"></el-option>
-            <el-option label="房地产" value="房地产"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="线索来源" prop="clueSource">
-          <el-select v-model="clueInfo.clueSource" placeholder="请选择线索来源">
-            <el-option label="搜索引擎" value="搜索引擎"></el-option>
-            <el-option label="广告" value="广告"></el-option>
-            <el-option label="线上询价" value="线上询价"></el-option>
-            <el-option label="预约上门" value="预约上门"></el-option>
-            <el-option label="电话咨询" value="电话咨询"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="跟进方式" prop="clueMethod">
-          <el-input v-model="clueInfo.clueMethod" placeholder="跟进方式"></el-input>
-        </el-form-item>
-        <el-form-item label-position="top" label="第一次跟进时间" prop="clueFirst">
-          <el-date-picker
-            v-model="clueInfo.clueFirst"
-            type="date"
-            placeholder="选择日期">
-          </el-date-picker>
-        </el-form-item>
-          <el-form-item label="下次跟进时间" prop="clueNext">
-            <el-date-picker
-              v-model="clueInfo.clueNext"
-              type="date"
-              placeholder="选择日期">
-            </el-date-picker>
-          </el-form-item>
-
-        <el-form-item label="跟进内容" prop="clueContent">
-          <el-input resize="none" type="textarea"  :autosize="{ minRows: 4, maxRows: 4}" v-model="clueInfo.clueContent" placeholder="备注"></el-input>
-        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="线索客户名称" prop="clueName">
+              <el-input v-model="clueInfo.clueName" placeholder="线索客户名称"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="线索手机" prop="cluePhone">
+              <el-input v-model="clueInfo.cluePhone" placeholder="线索手机"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="线索地址" prop="clueAddr">
+              <el-input v-model="clueInfo.clueAddr" placeholder="线索地址"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="线索级别" prop="clueLevel">
+              <el-select v-model="clueInfo.clueLevel" placeholder="请选择线索级别">
+                <el-option label="低优先级客户" value="低优先级客户"></el-option>
+                <el-option label="一般客户" value="一般客户"></el-option>
+                <el-option label="重点客户" value="重点客户"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="线索行业" prop="clueProfession">
+              <el-select v-model="clueInfo.clueProfession" placeholder="请选择线索行业">
+                <el-option label="IT" value="IT"></el-option>
+                <el-option label="金融业" value="金融业"></el-option>
+                <el-option label="运输/物流" value="运输/物流"></el-option>
+                <el-option label="文化传媒" value="文化传媒"></el-option>
+                <el-option label="生产" value="生产"></el-option>
+                <el-option label="房地产" value="房地产"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="线索来源" prop="clueSource">
+              <el-select v-model="clueInfo.clueSource" placeholder="请选择线索来源">
+                <el-option label="搜索引擎" value="搜索引擎"></el-option>
+                <el-option label="广告" value="广告"></el-option>
+                <el-option label="线上询价" value="线上询价"></el-option>
+                <el-option label="预约上门" value="预约上门"></el-option>
+                <el-option label="电话咨询" value="电话咨询"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="跟进方式" prop="clueMethod">
+              <el-select v-model="clueInfo.clueMethod" placeholder="请选择跟进方式">
+                <el-option label="手机" value="手机"></el-option>
+                <el-option label="微信" value="微信"></el-option>
+                <el-option label="QQ" value="QQ"></el-option>
+                <el-option label="面谈" value="面谈"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label-position="top" label="第一次跟进时间" prop="clueFirst">
+              <el-date-picker
+                v-model="clueInfo.clueFirst"
+                type="date"
+                placeholder="选择日期">
+              </el-date-picker>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="下次跟进时间" prop="clueNext">
+              <el-date-picker
+                v-model="clueInfo.clueNext"
+                type="date"
+                placeholder="选择日期">
+              </el-date-picker>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="跟进内容" prop="clueContent">
+              <el-input resize="none" type="textarea"  :autosize="{ minRows: 4, maxRows: 4}" v-model="clueInfo.clueContent" placeholder="备注"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button type="danger" @click="cancle">取 消</el-button>

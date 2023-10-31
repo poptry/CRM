@@ -3,7 +3,7 @@
     <!-- 首行 菜单 -->
     <el-row class="first-row">
       <el-col :span="12">
-        <div>
+        <div class="menu_btn">
           <el-button  type="primary" @click="createNewUser">
             <i class="iconfont icon-xinzeng"></i>
             新增客户
@@ -47,33 +47,39 @@
             height="500"
             style="width: 100%;">
             <el-table-column
+              align="center"
               type="selection">
             </el-table-column>
             <el-table-column
               prop="clientId"
+              align="center"
               width="150"
               label="客户ID">
             </el-table-column>
             <el-table-column
+              align="center"
               prop="clientName"
               style="color: aqua;"
               :show-overflow-tooltip="true"
-              width="150"
+              width="120"
               fixed="left"
               label="姓名">
             </el-table-column>
             <el-table-column
               prop="clientPhone"
               width="150"
+              align="center"
               label="客户手机">
             </el-table-column>
             <el-table-column
+              align="center"
               prop="clientSource"
               width="150"
               label="客户来源">
             </el-table-column>
             <el-table-column
               prop="clientAddr"
+              align="center"
               width="150"
               :show-overflow-tooltip="true"
               label="客户地址">
@@ -81,22 +87,26 @@
             <el-table-column
               prop="clientProfession"
               width="150"
+              align="center"
               label="客户行业">
             </el-table-column>
             <el-table-column
               prop="clientLevel"
               width="150"
+              align="center"
               label="客户级别">
             </el-table-column>
             <el-table-column
               prop="clientRemark"
               :show-overflow-tooltip="true"
+              align="center"
               width="150"
               label="客户备注">
             </el-table-column>
             <el-table-column
               prop="userId"
               width="80"
+              align="center"
               label="用户ID">
             </el-table-column>
             <el-table-column
@@ -129,7 +139,7 @@
     <!-- </el-skeleton> -->
     <!-- 弹框 -->
     <el-dialog
-      title="新增客户"
+      title="客户"
       :visible.sync="dialogVisible"
       :close-on-press-escape="false"
       :close-on-click-modal="false"
@@ -183,6 +193,7 @@
       </span>
     </el-dialog>
     <el-dialog
+        v-if="popSea"
         title="公海"
         :modal="false"
         :visible.sync="popSea"
@@ -474,6 +485,9 @@ export default {
       .first-row{
         margin-bottom: 20px;
         .el-col{
+          .menu_btn{
+            display: flex;
+          }
           .search{
             display: flex;
             justify-content: space-around;
